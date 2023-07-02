@@ -1,0 +1,80 @@
+﻿@{
+    var carteras = new[]
+    {
+        new { Nombre = "Cartera 1", Moneda = "Dólar Americano (USD)", Cantidad = 5000 },
+        new { Nombre = "Cartera 2", Moneda = "Euro (EUR)", Cantidad = 3000 },
+        new { Nombre = "Cartera 3", Moneda = "Yen Japonés (JPY)", Cantidad = 700000 },
+    };
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestión de Finanzas Personales</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .cartera {
+            border: 1px solid #000;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+            .cartera h2 {
+                margin: 0;
+            }
+
+            .cartera p {
+                margin: 10px 0;
+            }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Gestión de Finanzas Personales</h1>
+
+    <canvas id="ingresosGastosChart"></canvas>
+
+    @foreach (var cartera in carteras)
+    {
+        <div class="cartera">
+            <h2>@cartera.Nombre</h2>
+            <p>Moneda: @cartera.Moneda</p>
+            <p>Cantidad: @cartera.Cantidad</p>
+        </div>
+    }
+
+    <script>
+        var ctx = document.getElementById('ingresosGastosChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+                datasets: [{
+                    label: 'Ingresos',
+                    data: [12000, 15000, 8000, 18000, 20000, 15000],
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Gastos',
+                    data: [8000, 12000, 6000, 15000, 18000, 10000],
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
