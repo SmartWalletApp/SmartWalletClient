@@ -1,11 +1,54 @@
 ﻿@{
-    var carteras = new[]
-    {
-        new { Nombre = "Cartera 1", Moneda = "Dólar Americano (USD)", Cantidad = 5000 },
-        new { Nombre = "Cartera 2", Moneda = "Euro (EUR)", Cantidad = 3000 },
-        new { Nombre = "Cartera 3", Moneda = "Yen Japonés (JPY)", Cantidad = 700000 },
-    };
+    var customer = new VuelingExchangeManagerClient.Models.Customer
+            {
+                Id = 1,
+                Name = "John Doe",
+                Email = "johndoe@example.com",
+                Wallets = new List<VuelingExchangeManagerClient.Models.Wallet>
+        {
+            new VuelingExchangeManagerClient.Models.Wallet
+            {
+                Id = 1,
+                Coin = new VuelingExchangeManagerClient.Models.Coin { Name = "Bitcoin" },
+                Balance = 2.0M,
+                BalanceHistory = new List<VuelingExchangeManagerClient.Models.BalanceHistory>
+                {
+                    new VuelingExchangeManagerClient.Models.BalanceHistory
+                    {
+                        Id = 1,
+                        Variation = 0.2M,
+                        Category = "Gasto",
+                        Date = DateTime.Now,
+                        Description = "Compra de café"
+                    },
+                }
+            },
+            new VuelingExchangeManagerClient.Models.Wallet
+            {
+                Id = 2,
+                Coin = new VuelingExchangeManagerClient.Models.Coin { Name = "USD" },
+                Balance = 2.0M,
+                BalanceHistory = new List<VuelingExchangeManagerClient.Models.BalanceHistory>
+                {
+                    new VuelingExchangeManagerClient.Models.BalanceHistory
+                    {
+                        Id = 2,
+                        Variation = 0.2M,
+                        Category = "Gasto",
+                        Date = DateTime.Now.AddDays(-1),
+                        Description = "Compra de café"
+                    },
+                }
+            },
+        }
+            };
+    var jwtToken = ViewBag.JwtToken;
+    var userId = ViewBag.UserId;
 }
+@model Tuple<VuelingExchangeManagerClient.Models.Customer>
+
+
+
 
 <!DOCTYPE html>
 <html>
@@ -16,36 +59,89 @@
             font-family: Arial, sans-serif;
         }
 
-        .cartera {
+        .cartera, .cliente {
             border: 1px solid #000;
             padding: 20px;
             margin: 20px 0;
         }
 
-            .cartera h2 {
+            .cartera h2, .cliente h2 {
                 margin: 0;
             }
 
-            .cartera p {
+            .cartera p, .cliente p {
                 margin: 10px 0;
             }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
     <h1>Gestión de Finanzas Personales</h1>
+    <!-- Agrega esta línea para mostrar el token JWT -->
+    <p>Tu token JWT es: @jwtToken</p>
 
-    <canvas id="ingresosGastosChart"></canvas>
+    <div>
+        <p>Su ID de usuario es: @userId</p>
+    </div>
 
-    @foreach (var cartera in carteras)
+    <div class="cliente">
+        <h2>@Model.Item1.Name</h2>
+        <p>ID: @Model.Item1.Id</p>
+        <p>Email: @Model.Item1.Email</p>
+    </div>
+    <label for="wallets">Escoge una cartera:</label>
+    <select id="wallets" name="wallets">
+        @foreach (var cartera in Model.Item1.Wallets)
+        {
+            <option value="@cartera.Id">@cartera.Coin.Name</option>
+        }
+    </select>
+
+    @foreach (var cartera in Model.Item1.Wallets)
     {
-        <div class="cartera">
-            <h2>@cartera.Nombre</h2>
-            <p>Moneda: @cartera.Moneda</p>
-            <p>Cantidad: @cartera.Cantidad</p>
+        <div class="cartera" id="wallet-@cartera.Id" style="display: none;">
+            <h2>@cartera.Coin.Name</h2>
+            <p>Cantidad: @cartera.Balance</p>
+
+            @{
+                var lastBalance = cartera.BalanceHistory.LastOrDefault();
+                if (lastBalance != null)
+                {
+                    <h3>Último balance:</h3>
+                    <p>Fecha: @lastBalance.Date</p>
+                    <p>Variación: @lastBalance.Variation</p>
+                    <p>Categoría: @lastBalance.Category</p>
+                    <p>Descripción: @lastBalance.Description</p>
+                }
+                else
+                {
+                    <p>No hay historial de balance disponible.</p>
+                }
+            }
         </div>
     }
 
+
+
+    <canvas id="ingresosGastosChart"></canvas>
+
+    <div class="balances">
+        @foreach (var cartera in customer.Wallets)
+        {
+            <h2>@cartera.Coin.Name</h2>
+            @foreach (var balance in cartera.BalanceHistory)
+            {
+                <p>Fecha: @balance.Date</p>
+                <p>Variación: @balance.Variation</p>
+                <p>Categoría: @balance.Category</p>
+                <p>Descripción: @balance.Description</p>
+                <hr />
+            }
+        }
+    </div>
+
+    <!--Graphic balance -->
     <script>
         var ctx = document.getElementById('ingresosGastosChart').getContext('2d');
         var chart = new Chart(ctx, {
@@ -74,6 +170,29 @@
                     }
                 }
             }
+        });
+    </script>
+
+    <script>
+        // Función para actualizar la cartera seleccionada
+        function updateSelectedWallet() {
+            var selectedWalletId = $("#wallets").val();
+
+            // Oculta todas las carteras
+            $(".cartera").hide();
+
+            // Muestra la cartera seleccionada
+            $("#wallet-" + selectedWalletId).show();
+        }
+
+        // Ejecuta updateSelectedWallet cuando se cambia la opción seleccionada
+        $("#wallets").change(function () {
+            updateSelectedWallet();
+        });
+
+        // Muestra la primera cartera al cargar la página
+        $(document).ready(function () {
+            updateSelectedWallet();
         });
     </script>
 </body>
