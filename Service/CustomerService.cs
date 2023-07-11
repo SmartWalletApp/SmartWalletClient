@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection.Metadata;
+using System.Text;
 using VuelingExchangeManagerClient.Models;
 
 namespace VuelingExchangeManagerClient.Service
@@ -20,13 +21,13 @@ namespace VuelingExchangeManagerClient.Service
             _client = new HttpClient(_handler);
         }
 
-        public async Task<Customer> GetCustomerByIdAsync(string jwtToken, int userId)
+        public async Task<Customer> GetMyCustomerAsync(string jwtToken)
         {
-            // Añade el token JWT como una cookie
-            _handler.CookieContainer.Add(new Uri("http://localhost:5233/Endpoint"),
-                                        new Cookie("jwt", jwtToken));
+           
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(jwtToken);
 
-            HttpResponseMessage response = await _client.GetAsync($"http://localhost:5233/Endpoint/{userId}");
+
+            HttpResponseMessage response = await _client.GetAsync("http://localhost:5233/User/GetMyCustomer");
             if (response.IsSuccessStatusCode)
             {
                 string content = await response.Content.ReadAsStringAsync();
@@ -37,6 +38,31 @@ namespace VuelingExchangeManagerClient.Service
                 throw new Exception("No se pudo obtener el customer");
             }
         }
+        public async Task<bool> AddBalance(BalanceHistory balanceData, string coinName, string jwtToken)
+        {
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(jwtToken);
+
+            string url = $"http://localhost:5233/User/AddHistoric/{coinName}";
+
+            var jsonContent = new StringContent(JsonConvert.SerializeObject(balanceData), Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync(url, jsonContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // El balance se añadió con éxito
+                return true;
+            }
+            else
+            {
+                // Hubo un error al añadir el balance
+                return false;
+            }
+        }
+
+
+
+
     }
 
 

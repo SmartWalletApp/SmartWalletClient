@@ -1,5 +1,6 @@
-﻿@{
-    var customer = new VuelingExchangeManagerClient.Models.Customer
+﻿@using System.Text.Json;
+@{
+    /*var customer = new VuelingExchangeManagerClient.Models.Customer
             {
                 Id = 1,
                 Name = "John Doe",
@@ -41,9 +42,17 @@
                 }
             },
         }
-            };
+            };*/
     var jwtToken = ViewBag.JwtToken;
     var userId = ViewBag.UserId;
+
+    var options = new JsonSerializerOptions
+            {
+                IncludeFields = true,
+            };
+
+    var balanceHistoryJson = JsonSerializer.Serialize(Model.Item1.Wallets.SelectMany(w => w.BalanceHistory), options);
+
 }
 @model Tuple<VuelingExchangeManagerClient.Models.Customer>
 
@@ -78,18 +87,13 @@
 </head>
 <body>
     <h1>Gestión de Finanzas Personales</h1>
-    <!-- Agrega esta línea para mostrar el token JWT -->
-    <p>Tu token JWT es: @jwtToken</p>
-
-    <div>
-        <p>Su ID de usuario es: @userId</p>
-    </div>
 
     <div class="cliente">
         <h2>@Model.Item1.Name</h2>
         <p>ID: @Model.Item1.Id</p>
         <p>Email: @Model.Item1.Email</p>
     </div>
+
     <label for="wallets">Escoge una cartera:</label>
     <select id="wallets" name="wallets">
         @foreach (var cartera in Model.Item1.Wallets)
@@ -97,6 +101,20 @@
             <option value="@cartera.Id">@cartera.Coin.Name</option>
         }
     </select>
+
+    <button class="show-add-wallet-form-btn">Añadir Cartera</button>
+
+    <div class="add-wallet-modal modal" style="display: none;">
+        <form class="balance-form" action="@Url.Action("AddWallet", "Home")" method="post">
+            <div>
+                <label for="coinName">Nombre de la Moneda:</label>
+                <input type="text" id="coinName" name="coinName" required />
+            </div>
+            <div>
+                <button type="submit">Crear Cartera</button>
+            </div>
+        </form>
+    </div>
 
     @foreach (var cartera in Model.Item1.Wallets)
     {
@@ -118,20 +136,45 @@
                 {
                     <p>No hay historial de balance disponible.</p>
                 }
+
+                <button class="show-form-btn">Añadir Movimiento</button>
+
+                <div class="modal">
+                    <form class="balance-form" action="@Url.Action("AddBalance", "Home")" method="post">
+                        <input type="hidden" id="isIncome" name="isIncome" value="false" />
+                        <input type="hidden" name="walletId" value="@cartera.Id" />
+                        <input type="hidden" name="coinName" value="@cartera.Coin.Name" />
+                        <div>
+                            <label for="variation">Variación:</label>
+                            <input type="number" id="variation" name="variation" step="0.01" required />
+                        </div>
+                        <div>
+                            <label for="category">Categoría:</label>
+                            <input type="text" id="category" name="category" required />
+                        </div>
+                        <div>
+                            <label for="description">Descripción:</label>
+                            <input type="text" id="description" name="description" required />
+                        </div>
+                        <div>
+                            <button type="submit" class="income-btn" style="background-color: green;">Ingreso</button>
+                            <button type="submit" class="expense-btn" style="background-color: red;">Gasto</button>
+                        </div>
+                    </form>
+                </div>
             }
         </div>
     }
 
-
-
+    
     <canvas id="ingresosGastosChart"></canvas>
 
     <div class="balances">
-        @foreach (var cartera in customer.Wallets)
+        @foreach (var cartera in Model.Item1.Wallets)
         {
-            <h2>@cartera.Coin.Name</h2>
             @foreach (var balance in cartera.BalanceHistory)
             {
+                <h2>@cartera.Coin.Name</h2>
                 <p>Fecha: @balance.Date</p>
                 <p>Variación: @balance.Variation</p>
                 <p>Categoría: @balance.Category</p>
@@ -141,38 +184,58 @@
         }
     </div>
 
-    <!--Graphic balance -->
+
+    <!--Income bttn -->
     <script>
-        var ctx = document.getElementById('ingresosGastosChart').getContext('2d');
-        var chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
-                datasets: [{
-                    label: 'Ingresos',
-                    data: [12000, 15000, 8000, 18000, 20000, 15000],
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Gastos',
-                    data: [8000, 12000, 6000, 15000, 18000, 10000],
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
+        document.querySelector('.income-btn').addEventListener('click', function (e) {
+            document.querySelector('#isIncome').value = "true";
+        });
+
+        document.querySelector('.expense-btn').addEventListener('click', function (e) {
+            document.querySelector('#isIncome').value = "false";
         });
     </script>
 
+    <!--Graphic balance -->
+    <script>
+        // decodifica los datos JSON de BalanceHistory en un objeto JavaScript
+        var balanceHistoryData = JSON.parse('@Html.Raw(balanceHistoryJson)');
+
+        // calcula los ingresos y gastos totales
+        var totalIncomes = 0;
+        var totalExpenses = 0;
+        for (var i = 0; i < balanceHistoryData.length; i++) {
+            console.log("Record: " + i + ", IsIncome: " + balanceHistoryData[i].IsIncome + ", Variation: " + balanceHistoryData[i].Variation);
+            if (balanceHistoryData[i].IsIncome) {
+                totalIncomes += balanceHistoryData[i].Variation;
+            } else {
+                totalExpenses += balanceHistoryData[i].Variation;
+            }
+        }
+
+        // crear un nuevo gráfico de pie
+        var ctx = document.getElementById('ingresosGastosChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Ingresos', 'Gastos'],
+                datasets: [{
+                    data: [totalIncomes, totalExpenses],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(255, 99, 132, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+        });
+    </script>
+
+    <!--Wallet selector -->
     <script>
         // Función para actualizar la cartera seleccionada
         function updateSelectedWallet() {
@@ -195,5 +258,82 @@
             updateSelectedWallet();
         });
     </script>
+
+    <!--Modal add wallet movement-->
+    <script>
+        // Función para mostrar el modal cuando se hace clic en el botón
+        $(".show-form-btn").click(function () {
+            $(this).next(".modal").show();
+        });
+
+        // Cerrar el modal cuando se hace clic fuera del formulario
+        $(window).click(function (e) {
+            if ($(e.target).hasClass("modal")) {
+                $(".modal").hide();
+            }
+        });
+    </script>
+    <style>
+        /* Estilos para el modal y su contenido */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .balance-form {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 30%;
+        }
+    </style>
+
+    <!--Modal add wallet -->
+    <script>
+        // Función para mostrar el modal cuando se hace clic en el botón
+        $(".show-add-wallet-form-btn").click(function () {
+            $(".add-wallet-modal").show();
+        });
+
+        // Cerrar el modal cuando se hace clic fuera del formulario
+        $(window).click(function (e) {
+            if ($(e.target).hasClass("modal")) {
+                $(".modal").hide();
+            }
+        });
+
+    </script>
+    <style>
+        
+        .add-wallet-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .balance-form {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 30%;
+        }
+        
+    </style>
+
 </body>
 </html>

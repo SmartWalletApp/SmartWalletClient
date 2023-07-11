@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Text.Json;
 using VuelingExchangeManagerClient.Models;
 using VuelingExchangeManagerClient.Service;
@@ -31,18 +32,7 @@ namespace VuelingExchangeManagerClient.Controllers
 
             ViewBag.JwtToken = jwtToken;
 
-            // Obtiene el ID del usuario
-            var userId = await GetUserId(jwtToken);
-            if (userId == null)
-            {
-                // Maneja el error obteniendo el ID
-                return View("Error");
-            }
-
-            // Pasa el ID a la vista
-            ViewBag.UserId = userId;
-
-            var customer = await _customerService.GetCustomerByIdAsync(jwtToken,(int)userId);
+            var customer = await _customerService.GetMyCustomerAsync(jwtToken);
             var model = new Tuple<Customer>(customer);
             return View(model);
 
@@ -53,53 +43,32 @@ namespace VuelingExchangeManagerClient.Controllers
             return HttpContext.Session.GetString("jwtToken");
         }
 
-        private async Task<int?> GetUserId(string jwt)
-        {
-            var handler = new JwtSecurityTokenHandler();
-
-            // Verifica si el token puede ser leído
-            if (handler.CanReadToken(jwt))
-            {
-                // Lee el token
-                var token = handler.ReadJwtToken(jwt);
-
-                // Obtiene el payload del token como un JSON
-                string payloadJson = token.Payload.SerializeToJson();
-
-                // Deserializa el JSON a un objeto
-                var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(payloadJson);
-
-                // Extrae el "id" del payload
-                if (payload.TryGetValue("id", out var idObj))
-                {
-                    // Intenta convertir el objeto ID a un string y luego a un int
-                    if (int.TryParse(idObj.ToString(), out var id))
-                    {
-                        return id;
-                    }
-                    else
-                    {
-                        _logger.LogError("No se pudo convertir el ID a un número entero.");
-                        return null;
-                    }
-                }
-                else
-                {
-                    _logger.LogError("No se pudo extraer el ID del token JWT.");
-                    return null;
-                }
-            }
-            else
-            {
-                _logger.LogError("Error obteniendo el ID del usuario desde el Endpoint");
-                return null;
-            }
-        }
-
-
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddBalance(BalanceHistory balanceData, string coinName)
+        {
+            var jwtToken = GetJwtToken();
+            var success = await _customerService.AddBalance(balanceData, coinName, jwtToken);
+
+            if (success)
+            {
+                return RedirectToAction("Index", "Home"); 
+            }
+            else
+            {
+                return View("Error");  
+            }
+        }
+
+        public IActionResult LogOut()
+        {
+            HttpContext.Session.Clear(); 
+
+            return RedirectToAction("LogIn", "LogIn");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
