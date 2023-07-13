@@ -1,0 +1,68 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .form-container {
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #000;
+            border-radius: 5px;
+        }
+
+            form label {
+                margin-bottom: 5px;
+            }
+
+            form input {
+                margin-bottom: 10px;
+                padding: 5px;
+            }
+
+                form input[type="submit"] {
+                    cursor: pointer;
+                }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        
+        <h2>Registrarse</h2>
+        <form action="/LogIn/SignIn" method="post">
+
+            <label for="register-email">Correo electrónico:</label>
+            <input type="email" id="register-email" name="email" required>
+            
+            <label for="register-name">Nombre:</label>
+            <input id="register-name" name="name" required>
+            
+            <label for="register-surname">Apellido:</label>
+            <input id="register-surname" name="surname" required>
+                        
+            <label for="register-password">Contraseña:</label>
+            <input type="password" id="register-password" name="password" required>
+            
+            <label for="register-repass">Repite la contraseña:</label>
+            <input type="password" id="register-repass" name="repass" required>
+
+            <input type="submit" value="Registrarse">
+        </form>
+    </div>
+</body>
+</html>
+
