@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Text;
 using VuelingExchangeManagerClient.Models;
+using VuelingExchangeManagerClient.RequestDtos;
 using VuelingExchangeManagerClient.Service;
 
 namespace VuelingExchangeManagerClient.Controllers
@@ -40,38 +41,19 @@ namespace VuelingExchangeManagerClient.Controllers
             return RedirectToAction("Index", "Home");
         }
         [HttpPost]
-        public async Task<IActionResult> SignIn(Customer customer, string repass)
+        public async Task<IActionResult> SignIn(CustomerRequestDto customer, string repass)
         {
-            // Comprobando que las contraseñas coinciden
-            if (customer.Password != repass)
+            var isCustomerCreated = await _loginService.CreateCustomer(customer);
+
+            if (isCustomerCreated)
             {
-                ModelState.AddModelError("repass", "Las contraseñas no coinciden");
+                return RedirectToAction("LogIn", "LogIn");
+            }
+            else
+            {
+                ModelState.AddModelError("", "No se pudo registrar el usuario");
                 return View(customer);
             }
-
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("http://localhost:5233/");
-
-                var json = JsonConvert.SerializeObject(customer);
-                var data = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await client.PostAsync("User/CreateCustomer", data);
-
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return RedirectToAction("LogIn", "LogIn");
-                }
-                else
-                {
-                    ModelState.AddModelError("", "No se pudo registrar el usuario");
-                    return View(customer);
-                }
-            }
         }
-
-
-
     }
 }

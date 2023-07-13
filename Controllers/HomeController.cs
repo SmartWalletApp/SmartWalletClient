@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
-using System.Text.Json;
 using VuelingExchangeManagerClient.Models;
+using VuelingExchangeManagerClient.RequestDtos;
+using VuelingExchangeManagerClient.ResponseDtos;
 using VuelingExchangeManagerClient.Service;
 
 namespace VuelingExchangeManagerClient.Controllers
@@ -21,6 +20,24 @@ namespace VuelingExchangeManagerClient.Controllers
             _customerService = customerService;
         }
 
+        [HttpPost]
+        public IActionResult SelectedCoin(string coinName, string minDate, string maxDate)
+        {
+            HttpContext.Session.SetString("SelectedCoin", coinName);
+            HttpContext.Session.SetString("SelectedCoinMinDate", minDate);
+            HttpContext.Session.SetString("SelectedCoinMaxDate", maxDate);
+
+            return RedirectToAction("Historics", "Home");
+        }
+
+        [HttpPost]
+        public IActionResult ReceiveToken(string token)
+        {
+            HttpContext.Session.SetString("Token", token);
+            return RedirectToAction("Index", "Home");
+        }
+
+
         public async Task<IActionResult> Index()
         {
             var jwtToken = GetJwtToken();
@@ -33,7 +50,8 @@ namespace VuelingExchangeManagerClient.Controllers
             ViewBag.JwtToken = jwtToken;
 
             var customer = await _customerService.GetMyCustomerAsync(jwtToken);
-            var model = new Tuple<Customer>(customer);
+
+            var model = new Tuple<CustomerResponseDto>(customer);
             return View(model);
 
         }
@@ -43,13 +61,56 @@ namespace VuelingExchangeManagerClient.Controllers
             return HttpContext.Session.GetString("jwtToken");
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Historics()
         {
-            return View();
+            var jwtToken = GetJwtToken();
+
+            var coinName = HttpContext.Session.GetString("SelectedCoin");
+            var minDate = HttpContext.Session.GetString("SelectedCoinMinDate");
+            var maxDate = HttpContext.Session.GetString("SelectedCoinMaxDate");
+
+            DateTime minDateClean;
+            DateTime maxDateClean;
+
+            DateTime.TryParse(minDate, out minDateClean);
+            DateTime.TryParse(maxDate, out maxDateClean);
+
+
+            if (!string.IsNullOrEmpty(coinName))
+            {
+                var json = await _customerService.ViewBalance(coinName, jwtToken, minDateClean, maxDateClean);
+
+                if (!string.IsNullOrEmpty(json))
+                {
+                    ViewData["JsonData"] = json;
+                    return View();
+                }
+            }
+
+            return View("Error");
+        }
+
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> AddWallet(WalletRequestDto walletData, string coinName)
+        {
+            var jwtToken = GetJwtToken();
+            var success = await _customerService.AddWallet(walletData, coinName, jwtToken);
+
+            if (success)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                return View("Error");
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddBalance(BalanceHistory balanceData, string coinName)
+        public async Task<IActionResult> AddBalance(BalanceHistoryRequestDto balanceData, string coinName)
         {
             var jwtToken = GetJwtToken();
             var success = await _customerService.AddBalance(balanceData, coinName, jwtToken);
@@ -63,6 +124,23 @@ namespace VuelingExchangeManagerClient.Controllers
                 return View("Error");  
             }
         }
+
+       /*[HttpPost]
+        public async Task<IActionResult> ViewBalance(string coinName)
+        {
+            var jwtToken = GetJwtToken();
+            var json = await _customerService.ViewBalance(coinName, jwtToken);
+
+            if (!string.IsNullOrEmpty(json))
+            {
+                return RedirectToAction("Historics", "Home", new { jsonData = json });
+            }
+            else
+            {
+                return View("Error");
+            }
+        }*/
+
 
         public IActionResult LogOut()
         {

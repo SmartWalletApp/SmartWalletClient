@@ -51,7 +51,10 @@
         </form>
 
         <div class="register-button">
-            <button onclick="location.href='/LogIn/SignIn';">Registrarse</button>
+            <form action="@Url.Action("ReceiveToken", "Home")" method="post">
+                <input type="hidden" name="token" value="@ViewBag.Token" />
+                <input type="submit" value="Submit Token" />
+            </form>
         </div>
     </div>
 </body>

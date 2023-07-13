@@ -1,0 +1,103 @@
+﻿@{
+    ViewData["Title"] = "Gastos por categorias";
+    var jsonData = ViewData["JsonData"] as string;
+}
+
+@section CustomStyles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<table id="myDataTable" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Category</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+</table>
+
+@section CustomScripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var jsonData = @Html.Raw(jsonData);
+
+            // Generar la tabla con las categorías y movimientos
+            var table = $("#myDataTable").DataTable({
+                data: Object.keys(jsonData).map(function (key) {
+                    return {
+                        "": "",
+                        "Category": key,
+                        "Total": jsonData[key].total, // added this to get the total value
+                        "Value": jsonData[key].balanceHistorics // this is the balanceHistorics list
+                    };
+                }),
+                columns: [
+                    { data: "" },
+                    { data: "Category" },
+                    { data: "Total" }, // added this to display the total value
+                    { data: "Value", visible: false } // this is the balanceHistorics list, initially hidden
+                ],
+                columnDefs: [
+                    {
+                        targets: 0,
+                        render: function (data, type, row, meta) {
+                            if (type === 'display') {
+                                return '<button class="details-control">Ver Movimientos</button>';
+                            }
+                            return '';
+                        }
+                    }
+                ],
+                order: [[1, 'asc']]
+            });
+
+
+            // Evento para mostrar u ocultar los detalles
+            $('#myDataTable tbody').on('click', 'td.details-control', function () {
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+
+                if (row.child.isShown()) {
+                    // Cerrar los detalles si ya están visibles
+                    row.child.hide();
+                    tr.removeClass('shown');
+                } else {
+                    // Mostrar los detalles
+                    var category = row.data().Category;
+                    var movements = jsonData[category].value;
+
+                    var html = '<table cellpadding="5" cellspacing="0" border="0">' +
+                        '<tr>' +
+                        '<th>ID</th>' +
+                        '<th>Variation</th>' +
+                        '<th>Is Income</th>' +
+                        '<th>Date</th>' +
+                        '<th>Description</th>' +
+                        '</tr>';
+
+                    for (var i = 0; i < movements.length; i++) {
+                        var movement = movements[i];
+                        html += '<tr>' +
+                            '<td>' + movement.id + '</td>' +
+                            '<td>' + movement.variation + '</td>' +
+                            '<td>' + movement.isIncome + '</td>' +
+                            '<td>' + movement.date + '</td>' +
+                            '<td>' + movement.description + '</td>' +
+                            '</tr>';
+                    }
+
+                    html += '</table>';
+
+                    row.child(html).show();
+                    tr.addClass('shown');
+                }
+            });
+        });
+    </script>
+}

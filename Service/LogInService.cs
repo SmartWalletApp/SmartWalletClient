@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
+using VuelingExchangeManagerClient.Models;
+using VuelingExchangeManagerClient.RequestDtos;
 
 namespace VuelingExchangeManagerClient.Service
 {
@@ -7,23 +9,20 @@ namespace VuelingExchangeManagerClient.Service
     {
         private readonly HttpClient _client;
 
+
         public LogInService(HttpClient client)
         {
             _client = client;
+
         }
 
         public async Task<string> GetJwtToken(string email, string password)
         {
-            var httpClient = new HttpClient();
+            var endpoint = $"User/Login?givenEmail={Uri.EscapeDataString(email)}&givenPassword={Uri.EscapeDataString(password)}";
+            var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
 
-            // Configura los detalles de la solicitud
-            var url = new Uri($"http://localhost:5233/User/Login?givenEmail={Uri.EscapeDataString(email)}&givenPassword={Uri.EscapeDataString(password)}");
-            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            var response = await _client.SendAsync(request);
 
-            // Envía la solicitud y obtén la respuesta
-            var response = await httpClient.SendAsync(request);
-
-            // Si la respuesta fue exitosa, extrae el token del cuerpo de la respuesta
             if (response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
@@ -34,6 +33,15 @@ namespace VuelingExchangeManagerClient.Service
             return null;
         }
 
+        public async Task<bool> CreateCustomer(CustomerRequestDto customer)
+        {
+            var json = JsonConvert.SerializeObject(customer);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("User/CreateCustomer", data);
+
+            return response.IsSuccessStatusCode;
+        }
 
     }
 }
