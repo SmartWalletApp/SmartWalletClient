@@ -18,8 +18,16 @@
         </tr>
     </thead>
 </table>
-
-<canvas id="myChart"></canvas>
+<div class="chart-container" style="display: flex;justify-content: space-around;}">
+    <div class="chart-item" style="flex: 1 0 auto;max-width: 500px;padding: 20px;">
+        <h1>Incomes</h1>
+        <canvas id="myChartIncomes"></canvas>
+    </div>
+    <div class="chart-item" style="flex: 1 0 auto;max-width: 500px;padding: 20px;">
+        <h1>Expenses</h1>
+        <canvas id="myChartExpenses"></canvas>
+    </div>
+</div>
 
 @section CustomScripts {
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
@@ -66,16 +74,30 @@
                 }
                 return color;
             }
-            console.log(categories.map(function (category) { return category.name; })); // nombres de las categorías
 
-            var ctx = document.getElementById('myChart').getContext('2d');
+            var ctx = document.getElementById('myChartIncomes').getContext('2d');
             var myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: categories.map(function (category) { return category.name; }),
+                    labels: categories.map(function (category) { if (category.total < 0) return category.name; }),
                     datasets: [{
-                        data: categories.map(function (category) { return category.total; }),
-                        backgroundColor: categories.map(function (category) { return getRandomColor(); }),
+                        data: categories.map(function (category) { if (category.total < 0) return category.total; }),
+                        backgroundColor: categories.map(function (category) { if (category.total < 0) return getRandomColor(); }),
+                    }]
+                },
+                options: {
+                    responsive: true,
+                }
+            });
+
+            var ctx = document.getElementById('myChartExpenses').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories.map(function (category) { if (category.total > 0) return category.name; }),
+                    datasets: [{
+                        data: categories.map(function (category) { if (category.total > 0) return category.total; }),
+                        backgroundColor: categories.map(function (category) { if (category.total > 0) return getRandomColor(); }),
                     }]
                 },
                 options: {
