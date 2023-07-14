@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
-using VuelingExchangeManagerClient.Models;
-using VuelingExchangeManagerClient.RequestDtos;
+using SmartWalletClient.MVC.Models;
+using SmartWalletClient.MVC.RequestDtos;
 
-namespace VuelingExchangeManagerClient.Service
+namespace SmartWalletClient.MVC.Service
 {
     public class LogInService
     {

@@ -1,9 +1,6 @@
 using System;
 using System.Net.Http.Headers;
-using VuelingExchangeManagerClient.Service;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
+using SmartWalletClient.MVC.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 

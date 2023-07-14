@@ -4,11 +4,11 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection.Metadata;
 using System.Text;
-using VuelingExchangeManagerClient.Models;
-using VuelingExchangeManagerClient.RequestDtos;
-using VuelingExchangeManagerClient.ResponseDtos;
+using SmartWalletClient.MVC.Models;
+using SmartWalletClient.MVC.RequestDtos;
+using SmartWalletClient.MVC.ResponseDtos;
 
-namespace VuelingExchangeManagerClient.Service
+namespace SmartWalletClient.MVC.Service
 {
     public class CustomerService
     {

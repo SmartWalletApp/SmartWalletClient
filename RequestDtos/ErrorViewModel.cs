@@ -1,4 +1,4 @@
-namespace VuelingExchangeManagerClient.Models
+namespace SmartWalletClient.MVC.Models
 {
     public class ErrorViewModel
     {

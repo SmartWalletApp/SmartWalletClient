@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "VuelingExchangeManagerClient": {
+    "SmartWalletClient.MVC": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

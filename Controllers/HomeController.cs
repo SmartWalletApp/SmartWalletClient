@@ -1,18 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using VuelingExchangeManagerClient.Models;
-using VuelingExchangeManagerClient.RequestDtos;
-using VuelingExchangeManagerClient.ResponseDtos;
-using VuelingExchangeManagerClient.Service;
+using SmartWalletClient.MVC.Models;
+using SmartWalletClient.MVC.RequestDtos;
+using SmartWalletClient.MVC.ResponseDtos;
+using SmartWalletClient.MVC.Service;
 
-namespace VuelingExchangeManagerClient.Controllers
+namespace SmartWalletClient.MVC.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly CustomerService _customerService;
-
-
 
         public HomeController(ILogger<HomeController> logger, CustomerService customerService)
         {

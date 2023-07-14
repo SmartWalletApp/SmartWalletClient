@@ -1,4 +1,4 @@
-﻿namespace VuelingExchangeManagerClient.ResponseDtos
+﻿namespace SmartWalletClient.MVC.ResponseDtos
 
 {
     public class CoinResponseDto

@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Text;
-using VuelingExchangeManagerClient.Models;
-using VuelingExchangeManagerClient.RequestDtos;
-using VuelingExchangeManagerClient.Service;
+using SmartWalletClient.MVC.Models;
+using SmartWalletClient.MVC.RequestDtos;
+using SmartWalletClient.MVC.Service;
 
-namespace VuelingExchangeManagerClient.Controllers
+namespace SmartWalletClient.MVC.Controllers
 {
     public class LogInController : Controller
     {

@@ -1,4 +1,4 @@
-﻿namespace VuelingExchangeManagerClient.RequestDtos
+﻿namespace SmartWalletClient.MVC.RequestDtos
 {
     public class BalanceHistoryRequestDto
     {
