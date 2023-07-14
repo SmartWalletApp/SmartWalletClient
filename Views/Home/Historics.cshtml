@@ -79,10 +79,16 @@
             var myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: categories.map(function (category) { if (category.total < 0) return category.name; }),
+                    labels: categories
+                    .filter(function (category) { return category.total < 0; })
+                    .map(function (category) { return category.name; }),
                     datasets: [{
-                        data: categories.map(function (category) { if (category.total < 0) return category.total; }),
-                        backgroundColor: categories.map(function (category) { if (category.total < 0) return getRandomColor(); }),
+                        data: categories
+                            .filter(function (category) { return category.total < 0; })
+                            .map(function (category) { return category.total; }),
+                        backgroundColor: categories
+                            .filter(function (category) { return category.total < 0; })
+                            .map(function (category) { return getRandomColor(); }),
                     }]
                 },
                 options: {
@@ -94,10 +100,16 @@
             var myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: categories.map(function (category) { if (category.total > 0) return category.name; }),
+                    labels: categories
+                        .filter(function (category) { return category.total > 0; })
+                        .map(function (category) { return category.name; }),
                     datasets: [{
-                        data: categories.map(function (category) { if (category.total > 0) return category.total; }),
-                        backgroundColor: categories.map(function (category) { if (category.total > 0) return getRandomColor(); }),
+                        data: categories
+                            .filter(function (category) { return category.total > 0; })
+                            .map(function (category) { return category.total; }),
+                        backgroundColor: categories
+                            .filter(function (category) { return category.total > 0; })
+                            .map(function (category) { return getRandomColor(); }),
                     }]
                 },
                 options: {
