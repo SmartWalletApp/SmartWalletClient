@@ -12,6 +12,7 @@
 <table id="myDataTable" class="display" style="width:100%">
     <thead>
         <tr>
+            <th>Category</th>
             <th>Variation</th>
             <th>Date</th>
             <th>Description</th>
@@ -49,6 +50,7 @@
                 categoryData.balanceHistorics.forEach(function (detail) {
                     var variation = detail.isIncome ? detail.variation : -detail.variation;
                     flattenedData.push({
+                        "Category": category,
                         "Variation": variation,
                         "Date": detail.date,
                         "Description": detail.description
@@ -60,6 +62,7 @@
             var table = $("#myDataTable").DataTable({
                 data: flattenedData,
                 columns: [
+                    {data: "Category"},
                     {data: "Variation"},
                     { data: "Date" },
                     { data: "Description" }
