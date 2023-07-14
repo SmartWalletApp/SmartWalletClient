@@ -19,18 +19,25 @@
     </thead>
 </table>
 
+<canvas id="myChart"></canvas>
+
 @section CustomScripts {
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+
         $(document).ready(function () {
             var jsonData = @Html.Raw(jsonData);
+
+            var categories = [];
 
             // Aplanar los datos
             var flattenedData = [];
             for (var category in jsonData) {
                 var categoryData = jsonData[category];
+                categories.push({ name: category, total: categoryData.total })
                 categoryData.balanceHistorics.forEach(function (detail) {
                     var variation = detail.isIncome ? detail.variation : -detail.variation;
                     flattenedData.push({
@@ -45,11 +52,35 @@
             var table = $("#myDataTable").DataTable({
                 data: flattenedData,
                 columns: [
-                    {
-                        data: "Variation"},
+                    {data: "Variation"},
                     { data: "Date" },
                     { data: "Description" }
                 ]
+            });
+
+            function getRandomColor() {
+                var letters = '0123456789ABCDEF';
+                var color = '#';
+                for (var i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
+            console.log(categories.map(function (category) { return category.name; })); // nombres de las categorías
+
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories.map(function (category) { return category.name; }),
+                    datasets: [{
+                        data: categories.map(function (category) { return category.total; }),
+                        backgroundColor: categories.map(function (category) { return getRandomColor(); }),
+                    }]
+                },
+                options: {
+                    responsive: true,
+                }
             });
         });
 
