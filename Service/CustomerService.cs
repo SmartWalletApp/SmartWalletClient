@@ -39,6 +39,8 @@ namespace SmartWalletClient.MVC.Service
         }
         public async Task<bool> AddBalance(BalanceHistoryRequestDto balanceData, string coinName, string jwtToken)
         {
+
+
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(jwtToken);
 
             string url = $"User/AddHistoric/{coinName}";

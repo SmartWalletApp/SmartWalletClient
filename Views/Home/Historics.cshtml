@@ -1,6 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Gastos por categorias";
-    var jsonData = ViewData["JsonData"] as string;
+    var jsonData = ViewData["JsonData"];
 }
 
 @section CustomStyles {
@@ -12,9 +12,9 @@
 <table id="myDataTable" class="display" style="width:100%">
     <thead>
         <tr>
-            <th></th>
-            <th>Category</th>
-            <th>Value</th>
+            <th>Variation</th>
+            <th>Date</th>
+            <th>Description</th>
         </tr>
     </thead>
 </table>
@@ -24,6 +24,36 @@
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 
     <script>
+        $(document).ready(function () {
+            var jsonData = @Html.Raw(jsonData);
+
+            // Aplanar los datos
+            var flattenedData = [];
+            for (var category in jsonData) {
+                var categoryData = jsonData[category];
+                categoryData.balanceHistorics.forEach(function (detail) {
+                    var variation = detail.isIncome ? detail.variation : -detail.variation;
+                    flattenedData.push({
+                        "Variation": variation,
+                        "Date": detail.date,
+                        "Description": detail.description
+                    });
+                });
+            }
+
+            // Generar la tabla
+            var table = $("#myDataTable").DataTable({
+                data: flattenedData,
+                columns: [
+                    {
+                        data: "Variation"},
+                    { data: "Date" },
+                    { data: "Description" }
+                ]
+            });
+        });
+
+        /*
         $(document).ready(function () {
             var jsonData = @Html.Raw(jsonData);
 
@@ -60,6 +90,7 @@
 
             // Evento para mostrar u ocultar los detalles
             $('#myDataTable tbody').on('click', 'td.details-control', function () {
+                var jsonData = @Html.Raw(jsonData);
                 var tr = $(this).closest('tr');
                 var row = table.row(tr);
 
@@ -98,6 +129,6 @@
                     tr.addClass('shown');
                 }
             });
-        });
+        });*/
     </script>
 }

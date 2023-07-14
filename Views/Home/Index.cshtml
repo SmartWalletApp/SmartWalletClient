@@ -166,10 +166,11 @@
 
                 <div class="modal">
                     <form class="balance-form" action="@Url.Action("AddBalance", "Home")" method="post">
-                        <input type="hidden" name="coinName" value="@cartera.Coin.Name" />
+                        <input type="hidden" name="coinName" value="@cartera.Coin.Name"/>
+                        <input type="hidden" name="isIncome" class="isIncome" value=""/>
                         <div>
                             <label for="variation">Variación:</label>
-                            <input type="number" id="variation" name="variation" step="0.01" required />
+                            <input type="text" id="variation" name="variation" step="any" required />
                         </div>
                         <div>
                             <label for="category">Categoría:</label>
@@ -229,11 +230,11 @@
     <!--Income bttn -->
     <script>
         document.querySelector('.income-btn').addEventListener('click', function (e) {
-            document.querySelector('#isIncome').value = "true";
+            document.querySelector('.isIncome').value = "true";
         });
 
         document.querySelector('.expense-btn').addEventListener('click', function (e) {
-            document.querySelector('#isIncome').value = "false";
+            document.querySelector('.isIncome').value = "false";
         });
     </script>
 

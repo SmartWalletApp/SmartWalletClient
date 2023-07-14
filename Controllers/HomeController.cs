@@ -28,13 +28,6 @@ namespace SmartWalletClient.MVC.Controllers
             return RedirectToAction("Historics", "Home");
         }
 
-        [HttpPost]
-        public IActionResult ReceiveToken(string token)
-        {
-            HttpContext.Session.SetString("Token", token);
-            return RedirectToAction("Index", "Home");
-        }
-
 
         public async Task<IActionResult> Index()
         {
@@ -122,22 +115,6 @@ namespace SmartWalletClient.MVC.Controllers
                 return View("Error");  
             }
         }
-
-       /*[HttpPost]
-        public async Task<IActionResult> ViewBalance(string coinName)
-        {
-            var jwtToken = GetJwtToken();
-            var json = await _customerService.ViewBalance(coinName, jwtToken);
-
-            if (!string.IsNullOrEmpty(json))
-            {
-                return RedirectToAction("Historics", "Home", new { jsonData = json });
-            }
-            else
-            {
-                return View("Error");
-            }
-        }*/
 
 
         public IActionResult LogOut()
